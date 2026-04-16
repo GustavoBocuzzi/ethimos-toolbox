@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethimos · Toolbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F4F0;
+    --surface: #FFFFFF;
+    --surface2: #EEEDE9;
+    --border: #D8D6CF;
+    --border-strong: #B8B5AB;
+    --text: #1A1916;
+    --text-muted: #6B6860;
+    --text-faint: #9B9890;
+    --accent: #1A3A5C;
+    --accent-light: #E8EFF6;
+    --accent-mid: #3B6A9A;
+    --green: #1A4A2E;
+    --green-light: #E6F0EA;
+    --red: #5C1A1A;
+    --red-light: #F0E6E6;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--accent);
+    padding: 0 32px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: #fff;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .logo span { color: #7AAFD4; }
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #7AAFD4;
+    letter-spacing: 0.06em;
+  }
+
+  /* TOOL NAV */
+  .tool-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .tool-nav-btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 14px 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tool-nav-btn:hover { color: var(--text); }
+  .tool-nav-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* LAYOUT */
+  .main { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
+
+  .tool-panel { display: none; }
+  .tool-panel.active { display: block; }
+
+  .panel-header { margin-bottom: 24px; }
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .panel-desc { font-size: 14px; color: var(--text-muted); }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.cols1 { grid-template-columns: 1fr; }
+  @media (max-width: 600px) {
+    .form-grid, .form-grid.cols3 { grid-template-columns: 1fr; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field input, .field select, .field textarea {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent-mid);
+  }
+  .field select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6860' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+
+  /* TABELA ROWS */
+  .rows-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .order-row {
+    display: grid;
+    grid-template-columns: 2fr 80px 100px 100px 120px 100px 28px;
+    gap: 8px;
+    align-items: end;
+  }
+  @media (max-width: 700px) {
+    .order-row { grid-template-columns: 1fr 1fr; }
+    .order-row .remove-btn { display: none; }
+  }
+  .remove-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-faint);
+    cursor: pointer;
+    height: 35px;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s, color 0.1s;
+  }
+  .remove-btn:hover { background: var(--red-light); color: var(--red); border-color: #D4AAAA; }
+
+  .add-row-btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--accent-mid);
+    background: none;
+    border: 1px dashed var(--border-strong);
+    border-radius: 4px;
+    padding: 8px 14px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background 0.1s;
+  }
+  .add-row-btn:hover { background: var(--accent-light); }
+
+  /* ACTIONS */
+  .actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+  .btn-generate {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-generate:hover { background: var(--accent-mid); }
+  .btn-copy {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .btn-copy:hover { background: var(--surface2); }
+  .copy-feedback {
+    font-size: 12px;
+    color: var(--green);
+    font-family: var(--mono);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .copy-feedback.show { opacity: 1; }
+
+  /* OUTPUT */
+  .output-wrap { margin-top: 20px; }
+  .output-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .output-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 80px;
+  }
+  .output-box.email-subject {
+    background: var(--accent-light);
+    border-color: #C0D4E8;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 8px;
+    min-height: auto;
+    padding: 10px 14px;
+  }
+  .output-box.placeholder { color: var(--text-faint); font-style: italic; }
+
+  /* TYPE SELECTOR (Email) */
+  .type-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .type-tab {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .type-tab:hover { border-color: var(--border-strong); color: var(--text); }
+  .type-tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .email-form { display: none; }
+  .email-form.active { display: block; }
+
+  /* DISCLAIMER */
+  .disclaimer-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+
+  /* CV BADGE */
+  .cv-c { background: var(--green-light); color: var(--green); }
+  .cv-v { background: var(--red-light); color: var(--red); }
+
+  .row-num {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--mono);
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 10px;
+  }
+
+  .cols-header {
+    display: grid;
+    grid-template-columns: 2fr 80px 100px 100px 120px 100px 28px;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .cols-header span {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  @media (max-width: 700px) { .cols-header { display: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ETHIMOS <span>·</span> TOOLBOX</div>
+  <div class="header-tag">Mesa RF + RV</div>
+</header>
+
+<nav class="tool-nav">
+  <button class="tool-nav-btn active" onclick="switchTool('tabela')">Tabela Oracle Symphony</button>
+  <button class="tool-nav-btn" onclick="switchTool('email')">E-mail de Operação</button>
+</nav>
+
+<main class="main">
+
+  <!-- ═══════════════════════════════════════════
+       FERRAMENTA 1 · TABELA ORACLE SYMPHONY
+  ════════════════════════════════════════════ -->
+  <div id="tool-tabela" class="tool-panel active">
+    <div class="panel-header">
+      <div class="panel-title">Ferramenta 01</div>
+      <div class="panel-desc">Monte as ordens abaixo e copie a tabela formatada para o Oracle Symphony.</div>
+    </div>
+
+    <div class="cols-header">
+      <span>Ativo</span>
+      <span>C/V</span>
+      <span>Quantidade</span>
+      <span>Preço limite</span>
+      <span>Conta BTG</span>
+      <span>Validade</span>
+      <span></span>
+    </div>
+
+    <div class="rows-container" id="rows-container"></div>
+
+    <button class="add-row-btn" onclick="addRow()">+ Adicionar linha</button>
+
+    <div class="actions">
+      <button class="btn-generate" onclick="gerarTabela()">GERAR TABELA</button>
+      <button class="btn-copy" onclick="copiarTabela()">Copiar</button>
+      <span class="copy-feedback" id="fb-tabela">✓ copiado</span>
+    </div>
+
+    <div class="output-wrap">
+      <div class="output-label">Preview</div>
+      <div class="output-box placeholder" id="out-tabela">Preencha as ordens e clique em Gerar Tabela.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       FERRAMENTA 2 · EMAIL DE OPERAÇÃO
+  ════════════════════════════════════════════ -->
+  <div id="tool-email" class="tool-panel">
+    <div class="panel-header">
+      <div class="panel-title">Ferramenta 02</div>
+      <div class="panel-desc">Selecione o tipo de operação, preencha os campos e copie o e-mail pronto.</div>
+    </div>
+
+    <div class="type-tabs">
+      <button class="type-tab active" onclick="switchEmail('rv')">RV — Compra/Venda</button>
+      <button class="type-tab" onclick="switchEmail('rf-ap')">RF — Aplicação</button>
+      <button class="type-tab" onclick="switchEmail('rf-re')">RF — Resgate</button>
+      <button class="type-tab" onclick="switchEmail('swap')">Swap</button>
+      <button class="type-tab" onclick="switchEmail('coe')">COE</button>
+    </div>
+
+    <!-- RV -->
+    <div id="eform-rv" class="email-form active">
+      <div class="form-grid">
+        <div class="field"><label>Conta BTG</label><input type="text" id="rv-conta" placeholder="ex: 5096814"></div>
+        <div class="field"><label>Direção</label>
+          <select id="rv-dir"><option value="C">C — Compra</option><option value="V">V — Venda</option></select>
+        </div>
+        <div class="field"><label>Ativo (ticker)</label><input type="text" id="rv-ativo" placeholder="ex: BOVAD180"></div>
+        <div class="field"><label>Quantidade</label><input type="number" id="rv-qtd" placeholder="ex: 3000"></div>
+        <div class="field"><label>Preço limite</label><input type="text" id="rv-preco" placeholder="ex: 12,56"></div>
+        <div class="field"><label>Validade</label>
+          <select id="rv-val"><option value="HOJE">HOJE</option><option value="VAC">VAC</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- RF Aplicação -->
+    <div id="eform-rf-ap" class="email-form">
+      <div class="form-grid">
+        <div class="field"><label>Conta BTG</label><input type="text" id="rfap-conta" placeholder="ex: 5096814"></div>
+        <div class="field"><label>Ativo</label><input type="text" id="rfap-ativo" placeholder="ex: CDB Banco XP 2026"></div>
+        <div class="field"><label>Emissor</label><input type="text" id="rfap-emissor" placeholder="ex: Banco XP"></div>
+        <div class="field"><label>Carência</label><input type="text" id="rfap-carencia" placeholder="ex: 90 dias / D+0"></div>
+        <div class="field"><label>Vencimento</label><input type="text" id="rfap-venc" placeholder="ex: 15/01/2027"></div>
+        <div class="field"><label>Taxa mínima (a.a.)</label><input type="text" id="rfap-taxa" placeholder="ex: 13,20%"></div>
+      </div>
+      <div class="form-grid cols1" style="margin-top:12px;">
+        <div class="field"><label>Valor limite a ser aplicado</label><input type="text" id="rfap-valor" placeholder="ex: R$ 50.000,00"></div>
+      </div>
+    </div>
+
+    <!-- RF Resgate -->
+    <div id="eform-rf-re" class="email-form">
+      <div class="form-grid">
+        <div class="field"><label>Conta BTG</label><input type="text" id="rfre-conta" placeholder="ex: 5096814"></div>
+        <div class="field"><label>Ativo</label><input type="text" id="rfre-ativo" placeholder="ex: CDB Banco XP 2026"></div>
+        <div class="field"><label>Emissor</label><input type="text" id="rfre-emissor" placeholder="ex: Banco XP"></div>
+        <div class="field"><label>Carência</label><input type="text" id="rfre-carencia" placeholder="ex: 90 dias / D+0"></div>
+        <div class="field"><label>Vencimento</label><input type="text" id="rfre-venc" placeholder="ex: 15/01/2027"></div>
+        <div class="field"><label>PU aprox. de venda</label><input type="text" id="rfre-pu" placeholder="ex: 1.245,60"></div>
+        <div class="field"><label>Financeiro bruto aprox.</label><input type="text" id="rfre-fin" placeholder="ex: R$ 62.280,00"></div>
+        <div class="field"><label>Quantidade a resgatar</label><input type="text" id="rfre-qtd" placeholder="ex: 50"></div>
+      </div>
+    </div>
+
+    <!-- Swap -->
+    <div id="eform-swap" class="email-form">
+      <div class="form-grid">
+        <div class="field"><label>Conta BTG</label><input type="text" id="sw-conta" placeholder="ex: 5096814"></div>
+        <div class="field"><label>Data de início</label><input type="text" id="sw-inicio" placeholder="ex: 20/04/2025"></div>
+        <div class="field"><label>Data de vencimento</label><input type="text" id="sw-venc" placeholder="ex: 20/04/2026"></div>
+        <div class="field"><label>Valor de referência</label><input type="text" id="sw-valor" placeholder="ex: R$ 500.000,00"></div>
+        <div class="field"><label>Ponta ativa</label><input type="text" id="sw-ativa" placeholder="ex: 110% CDI"></div>
+        <div class="field"><label>Ponta passiva</label><input type="text" id="sw-passiva" placeholder="ex: IPCA + 6,50%"></div>
+      </div>
+      <div class="form-grid cols1" style="margin-top:12px;">
+        <div class="field"><label>Ativo a depositar em garantia</label><input type="text" id="sw-garantia" placeholder="ex: TESOURO SELIC 2027 — 10 unidades"></div>
+      </div>
+    </div>
+
+    <!-- COE -->
+    <div id="eform-coe" class="email-form">
+      <div class="form-grid">
+        <div class="field"><label>Conta BTG</label><input type="text" id="coe-conta" placeholder="ex: 5096814"></div>
+        <div class="field"><label>Direção</label>
+          <select id="coe-dir"><option value="C">C — Compra</option><option value="V">V — Venda Antecipada</option></select>
+        </div>
+        <div class="field"><label>Ativo (código COE)</label><input type="text" id="coe-ativo" placeholder="ex: COE-BTG-2025-001"></div>
+        <div class="field"><label>Quantidade</label><input type="number" id="coe-qtd" placeholder="ex: 10"></div>
+        <div class="field"><label>PU</label><input type="text" id="coe-pu" placeholder="ex: 1.000,00"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-generate" onclick="gerarEmail()">GERAR E-MAIL</button>
+      <button class="btn-copy" onclick="copiarEmail()">Copiar</button>
+      <span class="copy-feedback" id="fb-email">✓ copiado</span>
+    </div>
+
+    <div class="output-wrap">
+      <div class="output-label">Assunto</div>
+      <div class="output-box email-subject placeholder" id="out-assunto">—</div>
+      <div class="output-label" style="margin-top:12px;">Corpo</div>
+      <div class="output-box placeholder" id="out-email">Preencha os campos e clique em Gerar E-mail.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+let tsvData = '';
+
+// ─── TOOL SWITCHER ──────────────────────────────────────────────────────────
+function switchTool(id) {
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tool-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ─── EMAIL TYPE SWITCHER ─────────────────────────────────────────────────────
+let currentEmailType = 'rv';
+function switchEmail(type) {
+  document.querySelectorAll('.email-form').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('eform-' + type).classList.add('active');
+  event.target.classList.add('active');
+  currentEmailType = type;
+  document.getElementById('out-assunto').textContent = '—';
+  document.getElementById('out-assunto').classList.add('placeholder');
+  document.getElementById('out-email').textContent = 'Preencha os campos e clique em Gerar E-mail.';
+  document.getElementById('out-email').classList.add('placeholder');
+}
+
+// ─── TABELA ORACLE SYMPHONY ──────────────────────────────────────────────────
+let rowCount = 0;
+function addRow() {
+  rowCount++;
+  const id = rowCount;
+  const wrap = document.getElementById('rows-container');
+  const div = document.createElement('div');
+  div.className = 'order-row';
+  div.id = 'row-' + id;
+  div.innerHTML = `
+    <div class="field" style="margin:0"><input type="text" id="r${id}-ativo" placeholder="BOVAD180" style="text-transform:uppercase"></div>
+    <div class="field" style="margin:0">
+      <select id="r${id}-cv">
+        <option value="C">C</option>
+        <option value="V">V</option>
+      </select>
+    </div>
+    <div class="field" style="margin:0"><input type="number" id="r${id}-qtd" placeholder="0"></div>
+    <div class="field" style="margin:0"><input type="text" id="r${id}-preco" placeholder="0,00"></div>
+    <div class="field" style="margin:0"><input type="text" id="r${id}-conta" placeholder="5096814"></div>
+    <div class="field" style="margin:0">
+      <select id="r${id}-val">
+        <option value="HOJE">HOJE</option>
+        <option value="VAC">VAC</option>
+      </select>
+    </div>
+    <button class="remove-btn" onclick="removeRow(${id})" title="Remover">×</button>
+  `;
+  wrap.appendChild(div);
+}
+
+function removeRow(id) {
+  const el = document.getElementById('row-' + id);
+  if (el) el.remove();
+}
+
+function gerarTabela() {
+  const rows = document.querySelectorAll('.order-row');
+  if (rows.length === 0) {
+    setOutput('out-tabela', 'Adicione pelo menos uma linha.', true);
+    return;
+  }
+
+  const headers = ['Ativo', 'C/V', 'Quantidade', 'Preço', 'Conta', 'Validade'];
+  const dataRows = [];
+
+  rows.forEach(row => {
+    const id = row.id.replace('row-', '');
+    const ativo = (document.getElementById('r' + id + '-ativo')?.value || '').toUpperCase();
+    const cv    = document.getElementById('r' + id + '-cv')?.value || '';
+    const qtd   = document.getElementById('r' + id + '-qtd')?.value || '';
+    const preco = document.getElementById('r' + id + '-preco')?.value || '';
+    const conta = document.getElementById('r' + id + '-conta')?.value || '';
+    const val   = document.getElementById('r' + id + '-val')?.value || '';
+    if (!ativo) return;
+    dataRows.push([ativo, cv, qtd, preco, conta, val]);
+  });
+
+  if (dataRows.length === 0) {
+    setOutput('out-tabela', 'Preencha ao menos o campo Ativo.', true);
+    return;
+  }
+
+  // TSV para clipboard (mesmo formato do Excel)
+  tsvData = [headers, ...dataRows].map(r => r.join('\t')).join('\n');
+
+  // Preview visual como tabela HTML
+  const el = document.getElementById('out-tabela');
+  el.classList.remove('placeholder');
+
+  let html = '<table style="border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12px;">';
+  html += '<thead><tr>';
+  headers.forEach(h => {
+    html += `<th style="text-align:left;padding:5px 10px 5px 0;border-bottom:1px solid var(--border-strong);color:var(--text-muted);font-weight:500;white-space:nowrap;">${h}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+  dataRows.forEach(row => {
+    html += '<tr>';
+    row.forEach((cell, i) => {
+      let style = 'padding:5px 10px 5px 0;border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text);';
+      if (i === 1) {
+        const color = cell === 'C' ? 'color:var(--green);font-weight:500;' : 'color:var(--red);font-weight:500;';
+        style += color;
+      }
+      html += `<td style="${style}">${cell}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ─── EMAIL GENERATOR ─────────────────────────────────────────────────────────
+const DISCLAIMER_RF = `Observações importantes: A taxa mínima representa o mínimo de rentabilidade aceito pelo cliente para realizar a aplicação. O valor financeiro total da aplicação e o PU de compra dependem da cotação feita no mercado secundário pela mesa de renda fixa BTG. Para ativos de Renda Fixa, com exceção de títulos públicos, toda solicitação lançada no sistema antes das 15:00h sofrerá tentativa de processamento no mesmo dia e toda solicitação lançada após às 15:00h sofrerá tentativa de processamento no próximo dia útil, nesse caso, as datas de carência e de vencimento de CDBs, LCs, LCIs e LCAs estarão sujeitas a postergação de um dia útil. Já para Títulos Públicos, toda solicitação lançada no sistema antes das 15:00h sofrerá tentativa de processamento no mesmo dia e toda solicitação lançada após às 15:00h sofrerá tentativa de processamento no próximo dia útil.`;
+
+const DISCLAIMER_SWAP = (garantia) => `Como se trata de uma operação realizada em bolsa (B3), há a necessidade de depositar previamente margem de garantia. Usaremos para isto os ativos abaixo, caso queira se desfazer deles no futuro, é possível trocá-lo por algum outro disponível em carteira e aceito pela B3.
+
+* ${garantia}`;
+
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function gerarEmail() {
+  let assunto = '', corpo = '';
+  const hoje = new Date().toLocaleDateString('pt-BR');
+
+  if (currentEmailType === 'rv') {
+    const conta = v('rv-conta'), dir = v('rv-dir'), ativo = v('rv-ativo').toUpperCase();
+    const qtd = v('rv-qtd'), preco = v('rv-preco'), val = v('rv-val');
+    const dirLabel = dir === 'C' ? 'Compra' : 'Venda';
+    assunto = `Ethimos Investimentos | Renda Variável — ${dirLabel}: ${ativo} — Conta BTG ${conta}`;
+    corpo = `Prezados,
+
+Solicitamos a execução da seguinte ordem de renda variável:
+
+  Conta BTG:     ${conta}
+  Direção:       ${dir} — ${dirLabel}
+  Ativo:         ${ativo}
+  Quantidade:    ${qtd}
+  Preço limite:  ${preco}
+  Validade:      ${val}
+
+Data da solicitação: ${hoje}
+
+Qualquer dúvida, estamos à disposição.
+
+Atenciosamente,
+Ethimos Investimentos`;
+
+  } else if (currentEmailType === 'rf-ap') {
+    const conta = v('rfap-conta'), ativo = v('rfap-ativo'), emissor = v('rfap-emissor');
+    const carencia = v('rfap-carencia'), venc = v('rfap-venc');
+    const taxa = v('rfap-taxa'), valor = v('rfap-valor');
+    assunto = `Ethimos Investimentos | Renda Fixa [APLICAÇÃO]: ${ativo} - Conta BTG ${conta}`;
+    corpo = `Prezados,
+
+Solicitamos a aplicação nos seguintes termos:
+
+  Conta BTG:               ${conta}
+  Ativo:                   ${ativo}
+  Emissor:                 ${emissor}
+  Carência:                ${carencia}
+  Vencimento:              ${venc}
+  Taxa mínima (a.a.):      ${taxa}
+  Valor limite:            ${valor}
+
+Data da solicitação: ${hoje}
+
+---
+${DISCLAIMER_RF}
+
+Atenciosamente,
+Ethimos Investimentos`;
+
+  } else if (currentEmailType === 'rf-re') {
+    const conta = v('rfre-conta'), ativo = v('rfre-ativo'), emissor = v('rfre-emissor');
+    const carencia = v('rfre-carencia'), venc = v('rfre-venc');
+    const pu = v('rfre-pu'), fin = v('rfre-fin'), qtd = v('rfre-qtd');
+    assunto = `Ethimos Investimentos | Renda Fixa [RESGATE]: ${ativo} - Conta BTG ${conta}`;
+    corpo = `Prezados,
+
+Solicitamos o resgate nos seguintes termos:
+
+  Conta BTG:                        ${conta}
+  Ativo:                            ${ativo}
+  Emissor:                          ${emissor}
+  Carência:                         ${carencia}
+  Vencimento:                       ${venc}
+  PU aprox. de venda:               ${pu}
+  Financeiro bruto aprox.:          ${fin}
+  Quantidade a ser resgatada:       ${qtd}
+
+Data da solicitação: ${hoje}
+
+---
+${DISCLAIMER_RF}
+
+Atenciosamente,
+Ethimos Investimentos`;
+
+  } else if (currentEmailType === 'swap') {
+    const conta = v('sw-conta'), inicio = v('sw-inicio'), venc = v('sw-venc');
+    const valor = v('sw-valor'), ativa = v('sw-ativa'), passiva = v('sw-passiva');
+    const garantia = v('sw-garantia');
+    assunto = `Ethimos Investimentos | Swap - Conta BTG ${conta}`;
+    corpo = `Prezados,
+
+Solicitamos a contratação do seguinte Swap:
+
+  Conta BTG:          ${conta}
+  Data de início:     ${inicio}
+  Data de vencimento: ${venc}
+  Valor de referência:${valor}
+  Ponta ativa:        ${ativa}
+  Ponta passiva:      ${passiva}
+
+Data da solicitação: ${hoje}
+
+---
+${DISCLAIMER_SWAP(garantia)}
+
+Atenciosamente,
+Ethimos Investimentos`;
+
+  } else if (currentEmailType === 'coe') {
+    const conta = v('coe-conta'), dir = v('coe-dir'), ativo = v('coe-ativo').toUpperCase();
+    const qtd = v('coe-qtd'), pu = v('coe-pu');
+    const dirLabel = dir === 'C' ? 'Compra' : 'Venda Antecipada';
+    assunto = `Ethimos Investimentos | Solicitação de [${dirLabel}] - COE ${ativo}`;
+    corpo = `Prezados,
+
+Solicitamos a operação de COE conforme abaixo:
+
+  Conta BTG:   ${conta}
+  Direção:     ${dirLabel}
+  Ativo:       ${ativo}
+  Quantidade:  ${qtd}
+  PU:          ${pu}
+
+Data da solicitação: ${hoje}
+
+Qualquer dúvida, estamos à disposição.
+
+Atenciosamente,
+Ethimos Investimentos`;
+  }
+
+  document.getElementById('out-assunto').textContent = assunto;
+  document.getElementById('out-assunto').classList.remove('placeholder');
+  setOutput('out-email', corpo, false);
+}
+
+// ─── COPY HELPERS ─────────────────────────────────────────────────────────────
+function setOutput(id, text, isPlaceholder) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.classList.toggle('placeholder', isPlaceholder);
+}
+
+function copiarTabela() {
+  if (!tsvData) { alert('Gere a tabela primeiro.'); return; }
+
+  const rows = tsvData.split('\n').map(r => r.split('\t'));
+  let tableHtml = '<table><tbody>';
+  rows.forEach((row, i) => {
+    tableHtml += '<tr>';
+    row.forEach(cell => {
+      const tag = i === 0 ? 'th' : 'td';
+      tableHtml += `<${tag}>${cell}</${tag}>`;
+    });
+    tableHtml += '</tr>';
+  });
+  tableHtml += '</tbody></table>';
+
+  const fullHtml = `<html><body>${tableHtml}</body></html>`;
+
+  if (navigator.clipboard && window.ClipboardItem) {
+    navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html':  new Blob([fullHtml], { type: 'text/html' }),
+        'text/plain': new Blob([tsvData],  { type: 'text/plain' })
+      })
+    ]).then(() => {
+      const fb = document.getElementById('fb-tabela');
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2000);
+    }).catch(() => copyToClipboard(tsvData, 'fb-tabela'));
+  } else {
+    copyToClipboard(tsvData, 'fb-tabela');
+  }
+}
+
+function copiarEmail() {
+  const assunto = document.getElementById('out-assunto').textContent;
+  const corpo = document.getElementById('out-email').textContent;
+  const full = assunto === '—' ? corpo : `Assunto: ${assunto}\n\n${corpo}`;
+  copyToClipboard(full, 'fb-email');
+}
+
+function copyToClipboard(text, feedbackId) {
+  navigator.clipboard.writeText(text).then(() => {
+    const fb = document.getElementById(feedbackId);
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+// Init: add first row automatically
+addRow();
+</script>
+</body>
+</html>
