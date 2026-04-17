@@ -675,7 +675,7 @@ function gerarTabela() {
 // ─── EMAIL GENERATOR ─────────────────────────────────────────────────────────
 const DISCLAIMER_RF = `Observações importantes: A taxa mínima representa o mínimo de rentabilidade aceito pelo cliente para realizar a aplicação. O valor financeiro total da aplicação e o PU de compra dependem da cotação feita no mercado secundário pela mesa de renda fixa BTG. Para ativos de Renda Fixa, com exceção de títulos públicos, toda solicitação lançada no sistema antes das 15:00h sofrerá tentativa de processamento no mesmo dia e toda solicitação lançada após às 15:00h sofrerá tentativa de processamento no próximo dia útil, nesse caso, as datas de carência e de vencimento de CDBs, LCs, LCIs e LCAs estarão sujeitas a postergação de um dia útil. Já para Títulos Públicos, toda solicitação lançada no sistema antes das 15:00h sofrerá tentativa de processamento no mesmo dia e toda solicitação lançada após às 15:00h sofrerá tentativa de processamento no próximo dia útil.`;
 
-const DISCLAIMER_SWAP = (garantia) => `Como se trata de uma operação realizada em bolsa (B3), há a necessidade de depositar previamente margem de garantia. Usaremos para isto os ativos abaixo, caso queira se desfazer deles no futuro, é possível trocá-lo por algum outro disponível em carteira e aceito pela B3.
+const DISCLAIMER_SWAP = (garantia) => `Como se trata de uma operação realizada em bolsa (B3), há a necessidade de depositar previamente margem de garantia, o que será feito com o(s) ativo(s) abaixo. Caso queira se desfazer dele(s) no futuro, é possível fazer a troca por outros disponíveis em carteira e aceitos pela B3.
 
 * ${garantia}`;
 
