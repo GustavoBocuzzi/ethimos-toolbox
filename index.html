@@ -689,8 +689,13 @@ function gerarEmail() {
     const rvRows = document.getElementById('rv-email-rows')?.querySelectorAll('.rv-email-row') || [];
     if (rvRows.length === 0) valid = false;
     rvRows.forEach(row => {
-      const el = document.getElementById('rve' + row.dataset.id + '-ativo');
-      if (el && !el.value.trim()) { markError(el); valid = false; }
+      const id = row.dataset.id;
+      const ativoEl = document.getElementById('rve' + id + '-ativo');
+      const qtdEl   = document.getElementById('rve' + id + '-qtd');
+      const precoEl = document.getElementById('rve' + id + '-preco');
+      if (ativoEl && !ativoEl.value.trim()) { markError(ativoEl); valid = false; }
+      if (qtdEl && (!qtdEl.value.trim() || Number(qtdEl.value) === 0)) { markError(qtdEl); valid = false; }
+      if (precoEl && (!precoEl.value.trim() || parseFloat(precoEl.value.replace(',', '.')) === 0)) { markError(precoEl); valid = false; }
     });
   } else if (currentEmailType === 'rf-ap') {
     if (!validateRequired(['rfap-conta','rfap-ativo','rfap-emissor','rfap-carencia','rfap-venc','rfap-taxa','rfap-valor'])) valid = false;
