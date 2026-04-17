@@ -335,6 +335,23 @@
     letter-spacing: 0.05em;
   }
   @media (max-width: 700px) { .cols-header { display: none; } }
+
+  /* PLACEHOLDER */
+  input::placeholder, textarea::placeholder { color: #C0BDB5; }
+
+  /* VALIDATION ERROR */
+  .input-error {
+    border: 1.5px solid #C0392B !important;
+    background: #FDF0F0 !important;
+  }
+  .validation-msg {
+    font-size: 11px;
+    color: #C0392B;
+    font-family: var(--mono);
+    margin-top: 8px;
+    display: none;
+  }
+  .validation-msg.show { display: block; }
 </style>
 </head>
 <body>
@@ -373,6 +390,7 @@
     <div class="rows-container" id="rows-container"></div>
 
     <button class="add-row-btn" onclick="addRow()">+ Adicionar linha</button>
+    <div class="validation-msg" id="tabela-vmsg">Preencha os campos destacados.</div>
 
     <div class="actions">
       <button class="btn-generate" onclick="gerarTabela()">GERAR TABELA</button>
@@ -472,6 +490,8 @@
       </div>
     </div>
 
+    <div class="validation-msg" id="email-vmsg">Preencha os campos destacados.</div>
+
     <div class="actions">
       <button class="btn-generate" onclick="gerarEmail()">GERAR E-MAIL</button>
       <button class="btn-copy" onclick="copiarEmail()">Copiar</button>
@@ -491,6 +511,42 @@
 <script>
 let tsvData = '';
 
+// ─── VALIDATION & PRICE HELPERS ─────────────────────────────────────────────
+function markError(el) {
+  if (!el) return;
+  el.classList.add('input-error');
+  el.addEventListener('input', function clear() {
+    el.classList.remove('input-error');
+    el.removeEventListener('input', clear);
+  });
+}
+
+function validateRequired(ids) {
+  let ok = true;
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.value.trim()) { markError(el); ok = false; }
+  });
+  return ok;
+}
+
+function showValidationMsg(id, show) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show', show);
+}
+
+function setupPriceField(el) {
+  if (!el) return;
+  el.addEventListener('blur', function () {
+    const val = this.value.trim();
+    if (!val || /[a-zA-Z]/.test(val)) return;
+    if (!/^-?\d+([.,]\d*)?$/.test(val)) return;
+    const num = parseFloat(val.replace(',', '.'));
+    if (!isNaN(num)) this.value = num.toFixed(2).replace('.', ',');
+  });
+}
+
 // ─── TOOL SWITCHER ──────────────────────────────────────────────────────────
 function switchTool(id) {
   document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
@@ -507,6 +563,7 @@ function switchEmail(type) {
   document.getElementById('eform-' + type).classList.add('active');
   event.target.classList.add('active');
   currentEmailType = type;
+  showValidationMsg('email-vmsg', false);
   document.getElementById('out-assunto').textContent = '—';
   document.getElementById('out-assunto').classList.add('placeholder');
   document.getElementById('out-email').textContent = 'Preencha os campos e clique em Gerar E-mail.';
@@ -542,6 +599,7 @@ function addRow() {
     <button class="remove-btn" onclick="removeRow(${id})" title="Remover">×</button>
   `;
   wrap.appendChild(div);
+  setupPriceField(document.getElementById('r' + id + '-preco'));
 }
 
 function removeRow(id) {
@@ -550,11 +608,20 @@ function removeRow(id) {
 }
 
 function gerarTabela() {
-  const rows = document.querySelectorAll('.order-row');
+  const rows = document.querySelectorAll('#rows-container .order-row');
   if (rows.length === 0) {
     setOutput('out-tabela', 'Adicione pelo menos uma linha.', true);
     return;
   }
+
+  let valid = true;
+  rows.forEach(row => {
+    const id = row.id.replace('row-', '');
+    const ativoEl = document.getElementById('r' + id + '-ativo');
+    if (ativoEl && !ativoEl.value.trim()) { markError(ativoEl); valid = false; }
+  });
+  showValidationMsg('tabela-vmsg', !valid);
+  if (!valid) return;
 
   const headers = ['Ativo', 'C/V', 'Quantidade', 'Preço', 'Conta', 'Validade'];
   const dataRows = [];
@@ -615,6 +682,29 @@ const DISCLAIMER_SWAP = (garantia) => `Como se trata de uma operação realizada
 function v(id) { return (document.getElementById(id)?.value || '').trim(); }
 
 function gerarEmail() {
+  // --- VALIDATION ---
+  let valid = true;
+  if (currentEmailType === 'rv') {
+    if (!validateRequired(['rv-conta'])) valid = false;
+    const rvRows = document.getElementById('rv-email-rows')?.querySelectorAll('.rv-email-row') || [];
+    if (rvRows.length === 0) valid = false;
+    rvRows.forEach(row => {
+      const el = document.getElementById('rve' + row.dataset.id + '-ativo');
+      if (el && !el.value.trim()) { markError(el); valid = false; }
+    });
+  } else if (currentEmailType === 'rf-ap') {
+    if (!validateRequired(['rfap-conta','rfap-ativo','rfap-emissor','rfap-carencia','rfap-venc','rfap-taxa','rfap-valor'])) valid = false;
+  } else if (currentEmailType === 'rf-re') {
+    if (!validateRequired(['rfre-conta','rfre-ativo','rfre-emissor','rfre-carencia','rfre-venc','rfre-pu','rfre-fin','rfre-qtd'])) valid = false;
+  } else if (currentEmailType === 'swap') {
+    if (!validateRequired(['sw-conta','sw-inicio','sw-venc','sw-valor','sw-ativa','sw-passiva','sw-garantia'])) valid = false;
+  } else if (currentEmailType === 'coe') {
+    if (!validateRequired(['coe-conta','coe-ativo','coe-qtd','coe-pu'])) valid = false;
+  }
+  showValidationMsg('email-vmsg', !valid);
+  if (!valid) return;
+
+  // --- GENERATION ---
   let assunto = '', corpo = '';
   const hoje = new Date().toLocaleDateString('pt-BR');
 
@@ -631,11 +721,6 @@ function gerarEmail() {
       const val   = document.getElementById('rve'+id+'-val')?.value||'';
       if (ativo) ordens.push({ativo, cv, qtd, preco, val});
     });
-    if (!conta || ordens.length === 0) {
-      setOutput('out-email', 'Preencha a conta e ao menos uma ordem.', true);
-      document.getElementById('out-assunto').textContent = '—';
-      return;
-    }
     assunto = `Solicitação de ordem - Conta BTG ${conta}`;
 
     function pad(s, n) { s=String(s); return s+' '.repeat(Math.max(0,n-s.length)); }
@@ -848,8 +933,14 @@ function addRvEmailRow() {
     <button class="remove-btn" onclick="this.closest('.rv-email-row').remove()" title="Remover">×</button>
   `;
   wrap.appendChild(div);
+  setupPriceField(document.getElementById('rve' + id + '-preco'));
 }
 addRvEmailRow();
+
+// Setup price formatting on static fields
+['rfap-taxa','rfap-valor','rfre-pu','rfre-fin','sw-valor','coe-pu'].forEach(id => {
+  setupPriceField(document.getElementById(id));
+});
 </script>
 </body>
 </html>
