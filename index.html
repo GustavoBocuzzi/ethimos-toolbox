@@ -362,8 +362,8 @@
 </header>
 
 <nav class="tool-nav">
-  <button class="tool-nav-btn active" onclick="switchTool('tabela')">Tabela Oracle Symphony</button>
   <button class="tool-nav-btn" onclick="switchTool('email')">E-mail de Operação</button>
+  <button class="tool-nav-btn" onclick="switchTool('tabela')">Tabela Oracle Symphony</button>
 </nav>
 
 <main class="main">
@@ -371,7 +371,7 @@
   <!-- ═══════════════════════════════════════════
        FERRAMENTA 1 · TABELA ORACLE SYMPHONY
   ════════════════════════════════════════════ -->
-  <div id="tool-tabela" class="tool-panel active">
+  <div id="tool-tabela" class="tool-panel">
     <div class="panel-header">
       <div class="panel-title">Ferramenta 01</div>
       <div class="panel-desc">Monte as ordens abaixo e copie a tabela formatada para o Oracle Symphony.</div>
@@ -407,7 +407,7 @@
   <!-- ═══════════════════════════════════════════
        FERRAMENTA 2 · EMAIL DE OPERAÇÃO
   ════════════════════════════════════════════ -->
-  <div id="tool-email" class="tool-panel">
+  <div id="tool-email" class="tool-panel active">
     <div class="panel-header">
       <div class="panel-title">Ferramenta 02</div>
       <div class="panel-desc">Selecione o tipo de operação, preencha os campos e copie o e-mail pronto.</div>
@@ -553,21 +553,23 @@ function switchTool(id) {
   document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tool-' + id).classList.add('active');
   event.target.classList.add('active');
+  localStorage.setItem('activeTool', id);
 }
 
 // ─── EMAIL TYPE SWITCHER ─────────────────────────────────────────────────────
 let currentEmailType = 'rv';
-function switchEmail(type) {
+function switchEmail(type, btn) {
   document.querySelectorAll('.email-form').forEach(f => f.classList.remove('active'));
   document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('eform-' + type).classList.add('active');
-  event.target.classList.add('active');
+  (btn || event.target).classList.add('active');
   currentEmailType = type;
   showValidationMsg('email-vmsg', false);
   document.getElementById('out-assunto').textContent = '—';
   document.getElementById('out-assunto').classList.add('placeholder');
   document.getElementById('out-email').textContent = 'Preencha os campos e clique em Gerar E-mail.';
   document.getElementById('out-email').classList.add('placeholder');
+  localStorage.setItem('activeEmailType', type);
 }
 
 // ─── TABELA ORACLE SYMPHONY ──────────────────────────────────────────────────
@@ -939,6 +941,24 @@ addRvEmailRow();
 ['rfap-taxa','rfap-valor','rfre-pu','rfre-fin','sw-valor','coe-pu'].forEach(id => {
   setupPriceField(document.getElementById(id));
 });
+
+// ─── RESTORE ACTIVE TAB FROM LOCALSTORAGE ────────────────────────────────────
+(function restoreTabs() {
+  const tool = localStorage.getItem('activeTool') || 'email';
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tool-' + tool).classList.add('active');
+  document.querySelectorAll('.tool-nav-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick') === `switchTool('${tool}')`);
+  });
+
+  const emailType = localStorage.getItem('activeEmailType') || 'rv';
+  document.querySelectorAll('.email-form').forEach(f => f.classList.remove('active'));
+  document.getElementById('eform-' + emailType).classList.add('active');
+  currentEmailType = emailType;
+  document.querySelectorAll('.type-tab').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick') === `switchEmail('${emailType}')`);
+  });
+})();
 </script>
 </body>
 </html>
