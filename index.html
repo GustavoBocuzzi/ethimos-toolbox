@@ -405,18 +405,14 @@
 
     <!-- RV -->
     <div id="eform-rv" class="email-form active">
-      <div class="form-grid">
+      <div class="form-grid" style="max-width:300px;margin-bottom:16px;">
         <div class="field"><label>Conta BTG</label><input type="text" id="rv-conta" placeholder="ex: 5096814"></div>
-        <div class="field"><label>Direção</label>
-          <select id="rv-dir"><option value="C">C — Compra</option><option value="V">V — Venda</option></select>
-        </div>
-        <div class="field"><label>Ativo (ticker)</label><input type="text" id="rv-ativo" placeholder="ex: BOVAD180"></div>
-        <div class="field"><label>Quantidade</label><input type="number" id="rv-qtd" placeholder="ex: 3000"></div>
-        <div class="field"><label>Preço limite</label><input type="text" id="rv-preco" placeholder="ex: 12,56"></div>
-        <div class="field"><label>Validade</label>
-          <select id="rv-val"><option value="HOJE">HOJE</option><option value="VAC">VAC</option></select>
-        </div>
       </div>
+      <div class="cols-header" style="grid-template-columns:2fr 80px 100px 110px 90px 28px;">
+        <span>Ativo</span><span>C/V</span><span>Quantidade</span><span>Preço limite</span><span>Validade</span><span></span>
+      </div>
+      <div class="rows-container" id="rv-email-rows"></div>
+      <button class="add-row-btn" onclick="addRvEmailRow()">+ Adicionar ordem</button>
     </div>
 
     <!-- RF Aplicação -->
@@ -623,24 +619,41 @@ function gerarEmail() {
   const hoje = new Date().toLocaleDateString('pt-BR');
 
   if (currentEmailType === 'rv') {
-    const conta = v('rv-conta'), dir = v('rv-dir'), ativo = v('rv-ativo').toUpperCase();
-    const qtd = v('rv-qtd'), preco = v('rv-preco'), val = v('rv-val');
-    const dirLabel = dir === 'C' ? 'Compra' : 'Venda';
-    assunto = `Ethimos Investimentos | Renda Variável — ${dirLabel}: ${ativo} — Conta BTG ${conta}`;
-    corpo = `Prezados,
+    const conta = v('rv-conta');
+    const rvRows = document.getElementById('rv-email-rows')?.querySelectorAll('.rv-email-row') || [];
+    const ordens = [];
+    rvRows.forEach(row => {
+      const id = row.dataset.id;
+      const ativo = (document.getElementById('rve'+id+'-ativo')?.value||'').toUpperCase().trim();
+      const cv    = document.getElementById('rve'+id+'-cv')?.value||'';
+      const qtd   = document.getElementById('rve'+id+'-qtd')?.value||'';
+      const preco = document.getElementById('rve'+id+'-preco')?.value||'';
+      const val   = document.getElementById('rve'+id+'-val')?.value||'';
+      if (ativo) ordens.push({ativo, cv, qtd, preco, val});
+    });
+    if (!conta || ordens.length === 0) {
+      setOutput('out-email', 'Preencha a conta e ao menos uma ordem.', true);
+      document.getElementById('out-assunto').textContent = '—';
+      return;
+    }
+    assunto = `Solicitação de ordem - Conta BTG ${conta}`;
 
-Solicitamos a execução da seguinte ordem de renda variável:
+    function pad(s, n) { s=String(s); return s+' '.repeat(Math.max(0,n-s.length)); }
+    const cols = [12, 5, 12, 14, 8];
+    const hdrs = ['Ativo','C/V','Quantidade','Preço limite','Validade'];
+    const sep  = cols.map(w=>'-'.repeat(w)).join('  ');
+    const hdr  = hdrs.map((h,i)=>pad(h,cols[i])).join('  ');
+    const linhas = ordens.map(o=>[o.ativo,o.cv,o.qtd,o.preco,o.val].map((c,i)=>pad(c,cols[i])).join('  '));
 
-  Conta BTG:     ${conta}
-  Direção:       ${dir} — ${dirLabel}
-  Ativo:         ${ativo}
-  Quantidade:    ${qtd}
-  Preço limite:  ${preco}
-  Validade:      ${val}
+    corpo = `Prezado(a),
 
-Data da solicitação: ${hoje}
+Solicito autorização para execução da(s) ordem(s) abaixo na conta BTG ${conta}:
 
-Qualquer dúvida, estamos à disposição.
+${hdr}
+${sep}
+${linhas.join('\n')}
+
+Aguardo sua confirmação.
 
 Atenciosamente,
 Ethimos Investimentos`;
@@ -812,6 +825,30 @@ function copyToClipboard(text, feedbackId) {
 
 // Init: add first row automatically
 addRow();
+let rveCount = 0;
+function addRvEmailRow() {
+  rveCount++;
+  const id = rveCount;
+  const wrap = document.getElementById('rv-email-rows');
+  const div = document.createElement('div');
+  div.className = 'order-row rv-email-row';
+  div.dataset.id = id;
+  div.style.gridTemplateColumns = '2fr 80px 100px 110px 90px 28px';
+  div.innerHTML = `
+    <div class="field" style="margin:0"><input type="text" id="rve${id}-ativo" placeholder="PETR4" style="text-transform:uppercase"></div>
+    <div class="field" style="margin:0">
+      <select id="rve${id}-cv"><option value="C">C</option><option value="V">V</option></select>
+    </div>
+    <div class="field" style="margin:0"><input type="number" id="rve${id}-qtd" placeholder="0"></div>
+    <div class="field" style="margin:0"><input type="text" id="rve${id}-preco" placeholder="0,00"></div>
+    <div class="field" style="margin:0">
+      <select id="rve${id}-val"><option value="HOJE">HOJE</option><option value="VAC">VAC</option></select>
+    </div>
+    <button class="remove-btn" onclick="this.closest('.rv-email-row').remove()" title="Remover">×</button>
+  `;
+  wrap.appendChild(div);
+}
+addRvEmailRow();
 </script>
 </body>
 </html>
