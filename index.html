@@ -295,6 +295,9 @@
   .email-form { display: none; }
   .email-form.active { display: block; }
 
+  .tabela-form { display: none; }
+  .tabela-form.active { display: block; }
+
   /* DISCLAIMER */
   .disclaimer-box {
     background: var(--surface2);
@@ -377,30 +380,43 @@
       <div class="panel-desc">Monte as ordens abaixo e copie a tabela formatada para o Oracle Symphony.</div>
     </div>
 
-    <div class="cols-header">
-      <span>Ativo</span>
-      <span>C/V</span>
-      <span>Quantidade</span>
-      <span>Preço limite</span>
-      <span>Conta BTG</span>
-      <span>Validade</span>
-      <span></span>
+    <div class="type-tabs">
+      <button class="type-tab active" onclick="switchTabela('cv')">Compra / Venda de Ativos</button>
+      <button class="type-tab" onclick="switchTabela('encerramento')">Encerram. Estrut.</button>
     </div>
 
-    <div class="rows-container" id="rows-container"></div>
+    <!-- SUB-PAINEL: Compra / Venda de Ativos -->
+    <div id="tform-cv" class="tabela-form active">
+      <div class="cols-header">
+        <span>Ativo</span>
+        <span>C/V</span>
+        <span>Quantidade</span>
+        <span>Preço limite</span>
+        <span>Conta BTG</span>
+        <span>Validade</span>
+        <span></span>
+      </div>
 
-    <button class="add-row-btn" onclick="addRow()">+ Adicionar linha</button>
-    <div class="validation-msg" id="tabela-vmsg">Preencha os campos destacados.</div>
+      <div class="rows-container" id="rows-container"></div>
 
-    <div class="actions">
-      <button class="btn-generate" onclick="gerarTabela()">GERAR TABELA</button>
-      <button class="btn-copy" onclick="copiarTabela()">Copiar</button>
-      <span class="copy-feedback" id="fb-tabela">✓ copiado</span>
+      <button class="add-row-btn" onclick="addRow()">+ Adicionar linha</button>
+      <div class="validation-msg" id="tabela-vmsg">Preencha os campos destacados.</div>
+
+      <div class="actions">
+        <button class="btn-generate" onclick="gerarTabela()">GERAR TABELA</button>
+        <button class="btn-copy" onclick="copiarTabela()">Copiar</button>
+        <span class="copy-feedback" id="fb-tabela">✓ copiado</span>
+      </div>
+
+      <div class="output-wrap">
+        <div class="output-label">Preview</div>
+        <div class="output-box placeholder" id="out-tabela">Preencha as ordens e clique em Gerar Tabela.</div>
+      </div>
     </div>
 
-    <div class="output-wrap">
-      <div class="output-label">Preview</div>
-      <div class="output-box placeholder" id="out-tabela">Preencha as ordens e clique em Gerar Tabela.</div>
+    <!-- SUB-PAINEL: Encerramento de Estruturas -->
+    <div id="tform-encerramento" class="tabela-form">
+      <div class="output-box placeholder" style="margin-top:4px;">Em breve.</div>
     </div>
   </div>
 
@@ -554,6 +570,17 @@ function switchTool(id) {
   document.getElementById('tool-' + id).classList.add('active');
   event.target.classList.add('active');
   localStorage.setItem('activeTool', id);
+}
+
+// ─── TABELA SUB-TYPE SWITCHER ────────────────────────────────────────────────
+let currentTabelaType = 'cv';
+function switchTabela(type) {
+  document.querySelectorAll('#tool-tabela .tabela-form').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('#tool-tabela .type-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tform-' + type).classList.add('active');
+  event.target.classList.add('active');
+  currentTabelaType = type;
+  localStorage.setItem('activeTabelaType', type);
 }
 
 // ─── EMAIL TYPE SWITCHER ─────────────────────────────────────────────────────
@@ -952,11 +979,19 @@ addRvEmailRow();
   });
 
   const emailType = localStorage.getItem('activeEmailType') || 'rv';
-  document.querySelectorAll('.email-form').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('#tool-email .email-form').forEach(f => f.classList.remove('active'));
   document.getElementById('eform-' + emailType).classList.add('active');
   currentEmailType = emailType;
-  document.querySelectorAll('.type-tab').forEach(b => {
+  document.querySelectorAll('#tool-email .type-tab').forEach(b => {
     b.classList.toggle('active', b.getAttribute('onclick') === `switchEmail('${emailType}')`);
+  });
+
+  const tabelaType = localStorage.getItem('activeTabelaType') || 'cv';
+  document.querySelectorAll('#tool-tabela .tabela-form').forEach(f => f.classList.remove('active'));
+  document.getElementById('tform-' + tabelaType).classList.add('active');
+  currentTabelaType = tabelaType;
+  document.querySelectorAll('#tool-tabela .type-tab').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick') === `switchTabela('${tabelaType}')`);
   });
 })();
 </script>
